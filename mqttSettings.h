@@ -7,7 +7,10 @@ namespace mqttSettings {
 	const std::string USERNAME("emqx");
 	const std::string PASSWORD("lteIV");
 	const int QOS = 2;
-	const std::string TOPIC("cPlusPlus/client/lte/temparature");
+	const std::string TOPIC("cPlusPlus/client/lte/temperature");
+
+	const int MINTEMP = 60;
+	const int MAXTEMP = 90;
 
 
 };

@@ -4,23 +4,27 @@
 #include <cstdlib>
 #include <sstream>
 
+#include "mqttSettings.h"
 
 int main() {
-	int thermastat = 70;
+	int thermostat = 70;
 
-	std::cout << "Set the thermastat to a temparature, in Farenheit, within the range of 60-90:\n";
-	std::cin >> thermastat;
-	while ((thermastat < 60) || (thermastat > 90)) {
-		std::cout << thermastat << " is an invalid teperature\n";
-		std::cout << "Set the thermastat to a temparature, in Farenheit, within the range of 60-90:\n";
-		std::cin >> thermastat;
+	std::cout << "\nSet the thermostat to a temperature, in Fahrenheit, within the range of " << 
+		mqttSettings::MINTEMP << "-" << mqttSettings::MAXTEMP << ":\n";
+	std::cin >> thermostat;
+	while ((thermostat < mqttSettings::MINTEMP) || (thermostat > mqttSettings::MAXTEMP)) {
+		std::cout << thermostat << " is an invalid temperature\n";
+		std::cout << "Set the thermostat to a temperature, in Fahrenheit, within the range of " << 
+		mqttSettings::MINTEMP << "-" << mqttSettings::MAXTEMP << ":\n";
+
+		std::cin >> thermostat;
 	}
 
-	// This terminal will publish the temparature
-	std::system("gnome-terminal -t temparature -- bash -c './temparature'");
+	// This terminal will publish the temperature
+	std::system("gnome-terminal -t temperature -- bash -c './temperature'");
 
 	std::stringstream ss;
-	ss << "gnome-terminal -t fanControl -- bash -c './fanControl -t " << thermastat << "'";
+	ss << "gnome-terminal -t fanControl -- bash -c './fanControl -t " << thermostat << "'";
 	// This terminal will control the fan
 	std::system(ss.str().c_str());
 

@@ -9,8 +9,8 @@ const std::string CLIENT_ID("fan-control");
 
 class FanControlCb : public virtual mqtt::callback {
 	private:
-		int thermastat;
-		int temparature;
+		int thermostat;
+		int temperature;
 		std::mutex &mutex;
 	public:
 		virtual void connection_lost(const std::string& cause) override {
@@ -20,14 +20,14 @@ class FanControlCb : public virtual mqtt::callback {
 
 		virtual void message_arrived(mqtt::const_message_ptr msg) override {
 			try {
-				// Do not do range checking for the temparature here.  These will be bounded by the publisher
+				// Do not do range checking for the temperature here.  These will be bounded by the publisher
 				int newTemp = std::stoi(msg->to_string());
-				if (newTemp != temparature) {
-					temparature = newTemp;
-					if (temparature >= thermastat) {
-						std::cout << "Current Temparature is " << temparature << "F and thermastat set to " << thermastat << "F - fan on\n";
+				if (newTemp != temperature) {
+					temperature = newTemp;
+					if (temperature >= thermostat) {
+						std::cout << "Current Temperature is " << temperature << "F and thermostat set to " << thermostat << "F - fan on\n";
 					} else {
-						std::cout << "Current Temparature is " << temparature << "F and thermastat set to " << thermastat << "F - fan off\n";
+						std::cout << "Current Temperature is " << temperature << "F and thermostat set to " << thermostat << "F - fan off\n";
 					}
 				}
 			} catch(...) {
@@ -36,17 +36,17 @@ class FanControlCb : public virtual mqtt::callback {
 			}
 		}
 
-		FanControlCb(int therm, std::mutex &m) : thermastat(therm), temparature(-1), mutex(m) {}
+		FanControlCb(int therm, std::mutex &m) : thermostat(therm), temperature(-1), mutex(m) {}
 
 };
 
-static int body(mqtt::async_client &client, mqtt::connect_options &connOpts, const int thermastat) {
+static int body(mqtt::async_client &client, mqtt::connect_options &connOpts, const int thermostat) {
 	bool fanOn = false;
 
 	std::mutex mutex;
 	mutex.lock();
 
-	FanControlCb cb(thermastat, mutex);
+	FanControlCb cb(thermostat, mutex);
 	client.set_callback(cb);
 
 	client.connect(connOpts)->wait();
@@ -68,18 +68,18 @@ static int body(mqtt::async_client &client, mqtt::connect_options &connOpts, con
 
 
 int main(int argc, char *argv[]) {
-	int thermastat = 70;
+	int thermostat = 70;
 	int option;
 
 	while((option = getopt(argc, argv, "t:")) != -1) {
-		// dont waste time on a help messge since this will be called from another binary
+		// don't waste time on a help message since this will be called from another binary
 		switch(option) {
 			case 't':
 				int temp = std::atoi(optarg);
 				if ((temp >= 60) || (temp <= 90)) {
-					thermastat = temp;
+					thermostat = temp;
 				} else {
-					std::cout << temp << " out of range (60-90).  Using the default of " << thermastat << std::endl;
+					std::cout << temp << " out of range (60-90).  Using the default of " << thermostat << std::endl;
 				}
 		}
 	}
@@ -93,5 +93,5 @@ int main(int argc, char *argv[]) {
 	connOpts.set_password(mqttSettings::PASSWORD);
 
 
-	return body(client, connOpts, thermastat);
+	return body(client, connOpts, thermostat);
 }
